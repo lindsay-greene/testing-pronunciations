@@ -1,42 +1,49 @@
 
 var entry = document.getElementById("entry");
-console.log(entry);
 
-var apiURL = "";
-
-submit.addEventListener("keyup", function(event){
+entry.addEventListener("keyup", function(event){
     if(event.keyCode == 13) {
-        event.preventDefault;
+        sendRequest();
     }
 });
 
-async function buildURL(event) {
+function buildURL(event) {
     let word = document.getElementById("entry").value;
     var baseUrl = "https://api.wordnik.com/v4/word.json/"
     var apiKey = "i6ywqo6rwijjztu6tr3y6ackzvib0hdrit0mvjcx5brehzt97";
     apiUrl = baseUrl + word + "/pronunciations?useCanonical=false&typeFormat=ahd&limit=50&api_key=" + apiKey;
-    console.log(apiUrl);
+    return apiUrl;
 }
 
 async function sendRequest(event) {
-    await buildURL;
-    let request = new XMLHttpRequest();
-    request.open("GET", apiURL);
-    request.responseType = "json";
-    request.send();
-    console.log(request);
+    let apiUrl = buildURL();
+    fetch(apiUrl, { 
+        method: 'GET'
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(json) {
+    readData(json);
+    });
 }
 
-async function readData(event) {
-    await sendRequest;
-    // take in data 
-    // find "rawtype":"IPA"
-    // get its parent element
-    // search parent element for "raw" value
+function readData(json) {
+    console.log(json);
+    for (let index = 0; index < json.length; index++) {
+        const entry = json[index];
+        console.log(entry);
+        let entryType = entry.rawType;
+        if(entryType === "IPA") {
+            speak(entry.raw);
+            
+        }  
+    }
 }
 
-async function speak(pronunciation) {
-    await readData;
-    speechSynthesis.speak(pronunciation)
+function speak(IPA) {
+    var synth = window.speechSynthesis;
+    var utterance = new SpeechSynthesisUtterance(IPA);
+    utterance.pitch = 1;
+    utterance.rate = 1.2;
+    synth.speak(utterance);
 }
     
